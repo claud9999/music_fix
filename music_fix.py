@@ -11,6 +11,7 @@ parser.add_argument('--cap_album', action='store_true')
 parser.add_argument('--cap_name', action='store_true')
 parser.add_argument('--album_genre', action='store_true')
 parser.add_argument('--artist_parens', action='store_true')
+parser.add_argument('--dry_run', action='store_true')
 args = parser.parse_args()
 
 tracks = []
@@ -54,9 +55,9 @@ for t in sel:
     r = applescript.tell.app('Music', '''
     set t to %s
     set track_num to track number of t as text
-    set track_cnt to track count of t as  text
-    set disc_num to disc number of t as  text
-    set disc_cnt to disc count of t as  text
+    set track_cnt to track count of t as text
+    set disc_num to disc number of t as text
+    set disc_cnt to disc count of t as text
     set track_name to name of t
     set track_artist to artist of t
     set album_artist to album artist of t
@@ -81,8 +82,7 @@ if args.trackcnt:
     for track in tracks:
         a = track.fields['album']
         n = track.fields['track number']
-        if a not in last_track or last_track[a] < n:
-            last_track[a] = n
+        if a not in last_track or last_track[a] < n: last_track[a] = n
     for track in tracks:
         track.set('track count', last_track[track.fields['album']])
 
@@ -143,5 +143,6 @@ for track in tracks:
         %s
         ''' % (m, track.id, track.updates())
 
-r = applescript.tell.app('Music', m)
+if args.dry_run: print(m)
+else: r = applescript.tell.app('Music', m)
 if r.err: print('ERR: %r' % r.err)
